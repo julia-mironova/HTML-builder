@@ -10,7 +10,7 @@ fs.readdir(location3, { withFileTypes: true }).then((files) => {
     if (isFile) {
       fs.stat(path.join(location3, file.name)).then((stats) => {
         //console.log(stats.isDirectory());
-        console.log(`${file.name.slice(0, file.name.indexOf('.'))} - ${file.name.slice(file.name.indexOf('.')+1)} - ${(stats.size / 1024).toFixed(2)} kb`);
+        console.log(`${file.name.slice(0, file.name.indexOf('.'))} - ${file.name.slice(file.name.indexOf('.')+1)} - ${(stats.size / 1024).toFixed(2)}kb`);
       });
     }
   });
