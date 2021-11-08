@@ -16,10 +16,10 @@ async function isExistFile() {
 }
 
 async function cleanCopyDirectory() {
-    let isExist = await isExistFile();
-    if (isExist) {      
-      console.log(`remove file ${copyTo}`);
-      await fs.unlink(copyTo);
+  let isExist = await isExistFile();
+  if (isExist) {      
+    console.log(`remove file ${copyTo}`);
+    await fs.unlink(copyTo);
   }     
 }
   
@@ -34,25 +34,22 @@ async function copyFiles() {
       let typeOfFile =  file.name.slice(file.name.indexOf('.')+1);
       return isFile && (typeOfFile=='css');
     })
-    .map(async (file) => {   
-          console.log(`Writing file ${file.name}`);
-          let fileToRead = path.join(process.cwd(), '05-merge-styles', 'styles', file.name);
-          return await fs.readFile(fileToRead, {encoding: 'utf-8'});
-          //read.pipe(wriate, {end: false});        
-      
-    });    
+      .map(async (file) => {   
+        console.log(`Writing file ${file.name}`);
+        let fileToRead = path.join(process.cwd(), '05-merge-styles', 'styles', file.name);
+        return await fs.readFile(fileToRead, {encoding: 'utf-8'});
+        //read.pipe(wriate, {end: false});        
+      });    
     contentsList = await Promise.all(contentsList);
     contentsList.forEach(async (content) => {
       await fs.appendFile(copyTo, content, {encoding: 'utf-8'});
-    })
+    });
     console.log('File(s) was written to bundle.css');
   } catch {
     console.error('File(s) can not written');
   }
 }
-  
-
- 
+   
 cleanCopyDirectory().then(() => {
   copyFiles();
 });

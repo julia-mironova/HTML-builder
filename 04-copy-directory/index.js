@@ -7,7 +7,7 @@ let location4To =  path.join(process.cwd(),'04-copy-directory', 'files-copy');
 
 
 async function copyFiles() {
-try {
+  try {
     fs.mkdir(location4To, {recursive: true});
     const files = await fs.readdir(location4From, {withFileTypes: true});
    
@@ -20,7 +20,7 @@ try {
       } 
     });
     console.log('File(s) was written');
-    } catch {
+  } catch {
     console.error('File(s) can not written');
   }
 }
@@ -43,11 +43,11 @@ async function cleanCopyDirectory() {
     filesForClean.forEach(async (file) => {
       let copyToNewHolder = path.join(process.cwd(), '04-copy-directory', 'files-copy', file.name);
       await fs.unlink(copyToNewHolder);
-});
-   // console.log('Directory is cleaned up. ');
-} else {
-   // console.log('There is no directory. Clean up is not required');
-};
+    });
+  // console.log('Directory is cleaned up. ');
+  } else {
+    // console.log('There is no directory. Clean up is not required');
+  }
 }
 
 
