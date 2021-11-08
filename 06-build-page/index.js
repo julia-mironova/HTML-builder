@@ -7,6 +7,10 @@ let location6To =  path.join(process.cwd(),'06-build-page', 'project-dist');
 let copyToStyle = path.join(location6To, 'style.css');
 
 //make index
+let location6FromTemplate =  path.join(process.cwd(),'06-build-page', 'template.html');
+let location6ToHtml =  path.join(process.cwd(),'06-build-page', 'project-dist', 'index.html');
+let copyFromComponents = path.join(process.cwd(),'06-build-page', 'components');
+
 
 
 
