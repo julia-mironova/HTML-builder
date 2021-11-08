@@ -1,6 +1,8 @@
+//if doesn't work contact to Ylia: +375292694503 (viber/watsup)
+
 const path = require('path');
 const fs = require('fs/promises');
-
+const fs2 = require('fs');
 
 let location6FromStyles =  path.join(process.cwd(),'06-build-page', 'styles');
 let location6To =  path.join(process.cwd(),'06-build-page', 'project-dist');
@@ -8,33 +10,34 @@ let copyToStyle = path.join(location6To, 'style.css');
 
 //make index
 let location6FromTemplate =  path.join(process.cwd(),'06-build-page', 'template.html');
-let location6ToHtml =  path.join(process.cwd(),'06-build-page', 'project-dist', 'index.html');
-let copyFromComponents = path.join(process.cwd(),'06-build-page', 'components');
+let location6FromComponents = path.join(process.cwd(),'06-build-page', 'components');
+let write6ToHtml =  path.join(process.cwd(),'06-build-page', 'project-dist', 'index.html');
 
 
 
-
-
-
-//copy style
-async function isExistFile() {
-  const file =  copyToStyle;
+async function makeHtml() {  
   try {
-    await fs.access(file);
-    return true;
+    const files = await fs.readdir(location6FromComponents, {withFileTypes: true});
+    let readTemplate = await fs.readFile(location6FromTemplate, {encoding: 'utf-8'});
+    let contentsList = files.map(file => {
+      let name = file.name.slice(0, file.name.indexOf('.'));
+      return name;
+    });
+    for (let i=0; i<contentsList.length; i++){
+      let file = contentsList[i];
+      let fileToRead = path.join(location6FromComponents, `${file}.html`);
+      let fileContent = await fs.readFile(fileToRead, {encoding: 'utf-8'});
+      readTemplate = readTemplate.replace(`{{${file}}}`, fileContent);
+    }    
+    let writeStream = fs2.createWriteStream(write6ToHtml, 'utf-8');
+    writeStream.write(readTemplate);
+    console.log('File(s) was written to index.html');
   } catch (e) {
-    return false;
+    console.error('File(s) can not written to index.html');
+    console.error(e);
   }
 }
 
-async function cleanCopyDirectory() {
-  let isExist = await isExistFile();
-  if (isExist) {      
-    console.log(`remove file ${copyToStyle}`);
-    await fs.unlink(copyToStyle);
-  }     
-}
-  
 async function copyStyle() {
   try {
     fs.mkdir(location6To, {recursive: true});
@@ -60,146 +63,63 @@ async function copyStyle() {
   }
 }
    
-cleanCopyDirectory().then(() => {
+
+
+//copy assets:
+let location6ToAssets =  path.join(process.cwd(),'06-build-page', 'project-dist', 'assets');
+let location6FromAssets = path.join(process.cwd(),'06-build-page', 'assets');
+let arrAssetsNameList =['fonts', 'img', 'svg'];
+
+//universalFunction
+
+async function copyFilesAssets() {
+  for (let i=0; i < arrAssetsNameList.length; i++) { 
+   let from =   path.join(location6FromAssets, arrAssetsNameList[i]);
+   let to = path.join(location6ToAssets, arrAssetsNameList[i]);
+  try {
+   await fs.mkdir(to, {recursive: true});
+    const files = await fs.readdir(from, {withFileTypes: true});
+    files.forEach(file => {
+        let fileFromHolder = path.join(from, file.name);
+        let copyToNewHolder = path.join(to, file.name);
+        fs.copyFile(fileFromHolder, copyToNewHolder);
+      
+    });
+    console.log(`File(s) ${[i]} was written`);
+  } catch {
+    console.error(`File(s) ${[i]} can not written`);
+  }
+}
+}
+
+//clean directory
+
+async function isExistFolder() {
+  const dir = location6To;
+  try {
+    await fs.access(dir);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+async function cleanCopyDirectoryAll() {
+  let isExist = await isExistFolder();
+    if (isExist) {
+      try {
+      await fs.rm(location6To, {recursive: true });
+      } catch (e) {
+        console.log(e);
+      }
+    }
+} 
+
+
+cleanCopyDirectoryAll().then(() => {
+  copyFilesAssets();
+  makeHtml();
   copyStyle();
 });
 
-//copy assets:
-let location6FromAssetsFonts =  path.join(process.cwd(),'06-build-page', 'assets', 'fonts');
-let location6ToAssetsFonts =  path.join(process.cwd(),'06-build-page', 'project-dist', 'assets', 'fonts');
-let location6FromAssetsImg =  path.join(process.cwd(),'06-build-page', 'assets', 'img');
-let location6ToAssetsImg =  path.join(process.cwd(),'06-build-page', 'project-dist', 'assets', 'img');
-let location6FromAssetsSvg =  path.join(process.cwd(),'06-build-page', 'assets', 'svg');
-let location6ToAssetsSvg =  path.join(process.cwd(),'06-build-page', 'project-dist', 'assets', 'svg');
 
-//fonts
-async function copyFilesAssetsFonts() {
-  try {
-    fs.mkdir(location6ToAssetsFonts, {recursive: true});
-    const files = await fs.readdir(location6FromAssetsFonts, {withFileTypes: true});
-    files.forEach(file => {
-        let fileFromHolderFonts = path.join(location6FromAssetsFonts, file.name);
-        let copyToNewHolderFonts = path.join(location6ToAssetsFonts, file.name);
-        fs.copyFile(fileFromHolderFonts, copyToNewHolderFonts);
-      
-    });
-    console.log('File(s) fonts was written');
-  } catch {
-    console.error('File(s) fonts can not written');
-  }
-}
-  
-async function isExistFolderFonts() {
-  const dir = location6ToAssetsFonts;
-  try {
-    await fs.access(dir);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-
-async function cleanCopyDirectoryAssetsFonts() {
-  let isExist = await isExistFolderFonts();
-  if (isExist) {
-    let filesForClean = await fs.readdir(location6ToAssetsFonts, {withFileTypes: true});
-    filesForClean.forEach(async (file) => {
-      let copyToNewHolder = path.join(location6ToAssetsFonts, file.name);
-      await fs.unlink(copyToNewHolder);
-    });
-  // console.log('Directory is cleaned up. ');
-  } 
-}
-
-
-cleanCopyDirectoryAssetsFonts().then(() => {
-  copyFilesAssetsFonts();
-});
-//svg
-async function copyFilesAssetsSvg() {
-  try {
-    fs.mkdir(location6ToAssetsSvg, {recursive: true});
-    const files = await fs.readdir(location6FromAssetsSvg, {withFileTypes: true});
-    files.forEach(file => {
-        let fileFromHolderSvg = path.join(location6FromAssetsSvg, file.name);
-        let copyToNewHolderSvg = path.join(location6ToAssetsSvg, file.name);
-        fs.copyFile(fileFromHolderSvg, copyToNewHolderSvg);
-      
-    });
-    console.log('File(s) svg was written');
-  } catch {
-    console.error('File(s) svg can not written');
-  }
-}
-  
-async function isExistFolderSvg() {
-  const dir = location6ToAssetsSvg;
-  try {
-    await fs.access(dir);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-
-async function cleanCopyDirectoryAssetsSvg() {
-  let isExist = await isExistFolderSvg();
-  if (isExist) {
-    let filesForClean = await fs.readdir(location6ToAssetsSvg, {withFileTypes: true});
-    filesForClean.forEach(async (file) => {
-      let copyToNewHolder = path.join(location6ToAssetsSvg, file.name);
-      await fs.unlink(copyToNewHolder);
-    });
-  // console.log('Directory is cleaned up. ');
-  } 
-}
-
-cleanCopyDirectoryAssetsSvg().then(() => {
-  copyFilesAssetsSvg();
-});
-
-//img
-async function copyFilesAssetsImg() {
-  try {
-    fs.mkdir(location6ToAssetsImg, {recursive: true});
-    const files = await fs.readdir(location6FromAssetsImg, {withFileTypes: true});
-    files.forEach(file => {
-        let fileFromHolderImg = path.join(location6FromAssetsImg, file.name);
-        let copyToNewHolderImg = path.join(location6ToAssetsImg, file.name);
-        fs.copyFile(fileFromHolderImg, copyToNewHolderImg);
-      
-    });
-    console.log('File(s) img was written');
-  } catch {
-    console.error('File(s) img can not written');
-  }
-}
-  
-async function isExistFolderImg() {
-  const dir = location6ToAssetsImg;
-  try {
-    await fs.access(dir);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-
-async function cleanCopyDirectoryAssetsImg() {
-  let isExist = await isExistFolderImg();
-  if (isExist) {
-    let filesForClean = await fs.readdir(location6ToAssetsImg, {withFileTypes: true});
-    filesForClean.forEach(async (file) => {
-      let copyToNewHolder = path.join(location6ToAssetsImg, file.name);
-      await fs.unlink(copyToNewHolder);
-    });
-  // console.log('Directory is cleaned up. ');
-  } 
-}
-
-cleanCopyDirectoryAssetsImg().then(() => {
-  copyFilesAssetsImg();
-});
